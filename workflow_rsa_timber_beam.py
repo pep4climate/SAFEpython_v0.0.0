@@ -12,36 +12,37 @@ from SAFEpython.model_execution import model_execution # module to execute the m
 from SAFEpython.sampling import AAT_sampling # module to perform the input sampling
 from SAFEpython.util import aggregate_boot  # function to aggregate the bootstrap results
 
-from SAFEpython import HyMod
+# from SAFEpython import HyMod
 
 from input_variables import input_variables
-from Timber_Beam import Timber_Beam
+# from Timber_Beam import Timber_Beam
+from Bridge_Assessment_one_instance import bridge_assessment
 
 #%% Step 2: (setup the Hymod model)
 
 # Specify the directory where the data are stored
-mydir = os.getcwd()
+# mydir = os.getcwd()
 # Load data:
 
-Joist_length = 4.5;  # [m]
-Joist_spacing = 0.3; # [m]
+# Joist_length = 4.5;  # [m]
+# Joist_spacing = 0.3; # [m]
 
 # Select the limit state to consider
-LSs=['SLS','ULS'];
-LS = 1; # 1 if ULS and 2 for SLS
+# LSs=['SLS','ULS'];
+# LS = 1; # 1 if ULS and 2 for SLS
 
 # Definition of the joist cross-section
 # B = [47	47	47	47	47	75	75	75	75	75]/1000; % Joist cross-section typical depths (m)
 # H = [150 175 200 225 250 150 175 200 225 250]/1000; % Joist cross-section typical width (m)
-Cross_section = 10; # You can pick among 10 cross sections
+# Cross_section = 10; # You can pick among 10 cross sections
 
 # Selection of the exposure class and loading duration
 #class = 'C1';
 #loading = 'Long term';
-Kmod_factor = 0.7;
-Smod_factor = 0.5;
+# Kmod_factor = 0.7;
+# Smod_factor = 0.5;
 
-[eta_f, beta_f, eta_Emean, beta_Emean, eta_Gmean, beta_Gmean, rho_mean, sigma_rho, eta_snow, beta_snow] = input_variables();
+# [eta_f, beta_f, eta_Emean, beta_Emean, eta_Gmean, beta_Gmean, rho_mean, sigma_rho, eta_snow, beta_snow] = input_variables();
 # eta_f: median bending strength
 # beta_f: log standard deviation of the bending strength
 # eta_Emean: mean elastic modulus
@@ -53,6 +54,8 @@ Smod_factor = 0.5;
 # eta_snow: median snow load on the roof
 # beta_snow: log standard deviation of snow load on the roof 
 
+[eta_Wmean, beta_Wmean] = input_variables()
+
 # Define inputs:
 # Parameters =    f      E      G     rho     q
 #DistrFuns    = {'logn','logn','logn','norm','logn'} ; % Parameter distribution
@@ -61,28 +64,33 @@ Smod_factor = 0.5;
 # Define output:
 #myfun = 'Timber_Beam' ;
 
-# Number of uncertain parameters subject to SA:
-M = 5
-
 # Parameter distributions:
-distr_fun=[st.lognorm,st.lognorm,st.lognorm,st.norm,st.lognorm]
-distr_par= [[beta_f, eta_f], [beta_Emean, eta_Emean], [beta_Gmean, eta_Gmean], [sigma_rho, rho_mean], [beta_snow, eta_snow]];
+# distr_fun=[st.lognorm,st.lognorm,st.lognorm,st.norm,st.lognorm]
+# distr_par= [[beta_f, eta_f], [beta_Emean, eta_Emean], [beta_Gmean, eta_Gmean], [sigma_rho, rho_mean], [beta_snow, eta_snow]];
+distr_fun = [st.lognorm]
+distr_par = [[eta_Wmean,beta_Wmean]]
+
+# Number of uncertain parameters subject to SA:
+# M = 5
+M = len(distr_fun)
 
 # Name of parameters (will be used to customize plots):
-X_Labels = ['f','E','G','rho','q']
+# X_Labels = ['f','E','G','rho','q']
+X_Labels = ['uw']
 
 # Define output:
-fun_test = Timber_Beam
-
+# fun_test = Timber_Beam
+fun_test = bridge_assessment
 
 #%% Step 3 (sample inputs space)
 samp_strat = 'lhs' # Latin Hypercube
 N = 3000  #  Number of samples
 X = AAT_sampling(samp_strat, M, distr_fun, distr_par, N)
 
-
 #%% Step 4 (run the model)
-Y = model_execution(fun_test, X, Joist_length,Joist_spacing,Cross_section,Smod_factor,Kmod_factor)
+# Y = model_execution(fun_test, X, Joist_length,Joist_spacing,Cross_section,Smod_factor,Kmod_factor)
+# GEO has to run N times over X, and it has to be called from here
+Y = model_execution(fun_test, X)
 
 #%% Step 5a (Regional Sensitivity Analysis with threshold)
 

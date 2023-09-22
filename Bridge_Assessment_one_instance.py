@@ -1,5 +1,7 @@
 # import os
 
+ 
+
 # def bridge_assessment(parameters):
 
 #     sw = parameters[0];
@@ -12,15 +14,13 @@
 
 #     return Y
 
-def bridge_assessment(parameters):
+def bridge_assessment():
 
     # https://docs.python.org/3/tutorial/stdlib.html
     import os
 
     # To read csv files
     import pandas as pd
-    
-    import numpy as np
 
     # https://www.geeksforgeeks.org/clear-screen-python/
     os.system("cls")
@@ -45,7 +45,7 @@ def bridge_assessment(parameters):
     for file in files:
         print(file)
 
-    uW = parameters[1-1] # Attempt to define uW as a variable outside of os.system(<_>)
+    uW = 24 # Attempt to define uW as a variable outside of os.system(<_>)
 
     # Launch LimitState:GEO
     # Get a list of files within the ...\bin folder
@@ -54,19 +54,7 @@ def bridge_assessment(parameters):
     # os.system("geo32.exe -p:'uw:2594=24' -x -sf:'my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo") # it works with/without '' around uw
     # https://stackoverflow.com/questions/71403394/how-do-i-put-a-variable-in-a-path
     # GEO support team said: sometimes quotes are needed, other not
-    # os.system("geo32.exe -p:'uw:2594={uW}' -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo")
-    
-    for i in range(len(parameters)):
-        sw = parameters[i,0]
-        print(sw)
-        # string = "geo32.exe -p:uw:2594=" + '{sw}' + " -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo";
-        os.system("geo32.exe -p:uw:2594=" + str(sw) + " -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo")
-        # os.system("geo32.exe -p:'uw:2594={sw}' -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo")
-
-# initialise Y as a list/vector
-# for loop over the length of X
-# and then append results to Y
-# load Y in the workflow
+    os.system("geo32.exe -p:'uw:2594={uW}' -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo")
 
     # Get result Demand/Capacity from .csv file
     df = pd.read_csv("solution_file_SAFE.csv")
@@ -79,4 +67,4 @@ def bridge_assessment(parameters):
     return Y
 
 # Call the function bridge_assessment() when it is launched from this file
-# bridge_assessment()
+bridge_assessment()
