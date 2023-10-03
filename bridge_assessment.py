@@ -12,7 +12,7 @@
 
 #     return Y
 
-def bridge_assessment(parameters):
+def bridge_assessment(realisations):
 
     # https://docs.python.org/3/tutorial/stdlib.html
     import os
@@ -45,8 +45,12 @@ def bridge_assessment(parameters):
     for file in files:
         print(file)
 
-    uW = parameters[1-1] # Attempt to define uW as a variable outside of os.system(<_>)
-
+    # uW = realisations[1-1,] # Attempt to define uW as a variable outside of os.system(<_>)
+    # phidash = realisations[2-1] # Attempt to define phi' as a second variable outside of os.sytem(<_>)
+    
+    N = len(realisations) # number of realisations
+    M = int(realisations.size/len(realisations)) # number of random variables
+    
     # Launch LimitState:GEO
     # Get a list of files within the ...\bin folder
     # The modified variable is uw, that is unit weight of masonry of tunnel in file Tunnel.geo
@@ -56,27 +60,37 @@ def bridge_assessment(parameters):
     # GEO support team said: sometimes quotes are needed, other not
     # os.system("geo32.exe -p:'uw:2594={uW}' -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo")
     
-    for i in range(len(parameters)):
-        sw = parameters[i,0]
-        print(sw)
+    for row in realisations:
+        uw = row[0]
+        phidash = row[1]
+        # sw = parameters[0] # command for one instance of sw
+        # phidash = parameters[1] # command for one instance of phidash
+        # print(sw)
+        # print(phidash)
+        os.system("geo32.exe -p:uw:2594=" + str(uw) + " -p:phidash:2596=" + str(phidash) + " -x -sf:_my_test_SAFE_5 -sl:solution_file_SAFE_5.csv Tunnel.geo")
         # string = "geo32.exe -p:uw:2594=" + '{sw}' + " -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo";
-        os.system("geo32.exe -p:uw:2594=" + str(sw) + " -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo")
+        # os.system("geo32.exe -p:uw:2594=" + str(sw) + " -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo") # working instance
         # os.system("geo32.exe -p:'uw:2594={sw}' -x -sf:_my_test_SAFE -sl:solution_file_SAFE.csv Tunnel.geo")
-
+        # exit(0)
 # initialise Y as a list/vector
 # for loop over the length of X
 # and then append results to Y
 # load Y in the workflow
 
     # Get result Demand/Capacity from .csv file
-    df = pd.read_csv("solution_file_SAFE.csv")
-    print(df)
-    adequacy_factor = df['Answer'].values[0]
+    csv_file = "solution_file_SAFE_5.csv"
+    df = pd.read_csv(csv_file)
+    column_name = 'Answer'
+    adequacy_factor = df[column_name]
     print("The Adequacy Factor is: ", adequacy_factor)
     
-    Y = adequacy_factor
+    Y = adequacy_factor.to_numpy()
+    print("Y is:", Y)
 
     return Y
 
-# Call the function bridge_assessment() when it is launched from this file
-# bridge_assessment()
+# Commands for calling the function bridge_assessment() when it is launched from this file
+# uw = 18 # value lower than the one from the file Tunnel.geo
+# phidash = 35 # value from the file Tunnel.geo
+# parameters = [uw, phidash]
+# bridge_assessment(parameters)
